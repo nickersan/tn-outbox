@@ -32,4 +32,12 @@ class OutboxTest
     assertEquals(Duration.ofSeconds(60), properties.backoff(7));
     assertEquals(Duration.ofSeconds(60), properties.backoff(500));
   }
+
+  @Test
+  void shouldUseMaximumBackoffWhenInitialBackoffNegative()
+  {
+    OutboxProperties properties = new OutboxProperties(true, 50, Duration.ofSeconds(1), Duration.ofSeconds(30), Duration.ofSeconds(-1), Duration.ofSeconds(60), Duration.ofDays(7));
+
+    assertEquals(Duration.ofSeconds(60), properties.backoff(1));
+  }
 }

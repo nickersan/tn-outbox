@@ -18,14 +18,21 @@ public class OutboxRelayLifecycle implements SmartLifecycle
 
   private final OutboxRelay relay;
   private final OutboxProperties properties;
+  private final Duration purgeEvery;
 
   private volatile boolean running;
   private Thread thread;
 
   public OutboxRelayLifecycle(OutboxRelay relay, OutboxProperties properties)
   {
+    this(relay, properties, PURGE_EVERY);
+  }
+
+  OutboxRelayLifecycle(OutboxRelay relay, OutboxProperties properties, Duration purgeEvery)
+  {
     this.relay = relay;
     this.properties = properties;
+    this.purgeEvery = purgeEvery;
   }
 
   @Override
@@ -60,7 +67,7 @@ public class OutboxRelayLifecycle implements SmartLifecycle
 
   private void run()
   {
-    long lastPurge = 0;
+    long purgeDue = System.nanoTime();
 
     while (running)
     {
@@ -68,10 +75,10 @@ public class OutboxRelayLifecycle implements SmartLifecycle
       {
         int taken = relay.relay();
 
-        if (System.nanoTime() - lastPurge > PURGE_EVERY.toNanos() || lastPurge == 0)
+        if (System.nanoTime() - purgeDue >= 0)
         {
           relay.purge();
-          lastPurge = System.nanoTime();
+          purgeDue = System.nanoTime() + purgeEvery.toNanos();
         }
 
         if (taken < properties.batchSize()) Thread.sleep(properties.pollInterval());
