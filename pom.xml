@@ -12,7 +12,7 @@
 
   <groupId>com.tn.outbox</groupId>
   <artifactId>tn-outbox</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
 
   <packaging>jar</packaging>
 
